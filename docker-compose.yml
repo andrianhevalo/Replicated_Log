@@ -4,9 +4,9 @@ services:
   master:
     build: master/
     environment:
-      - Secondary_a_path=http://secondary_a:5001
+      - secondary_a_path=http://secondary_a:5001
       - FLASK_DEBUG=1
-      - Secondary_b_path=http://secondary_b:5001
+      - secondary_b_path=http://secondary_b:5001
     command: python ./master.py
     ports:
       - "5000:5000"
@@ -18,6 +18,7 @@ services:
     build: secondary_a/
     environment:
       - FLASK_DEBUG=1
+      - DELAY=1
     command: python ./secondary.py
     ports:
       - "5001:5001"
@@ -27,12 +28,13 @@ services:
       - master
 
   secondary_b:
-    build: secondary_b/
+    build: secondary_a/
     environment:
       - FLASK_DEBUG=1
+      - DELAY=10
     command: python ./secondary.py
     ports:
-      - "5002:5002"
+      - "5002:5001"
     networks:
       - replicated-log-network-secondary-b
     depends_on:
