@@ -35,26 +35,23 @@ async def append_message(message, w: int):
     return result[1]
 
 
-async def _post_to_endpoint_with_concern(endpoint, data, semaphore) -> bool:
+async def _post_to_endpoint_with_concern(endpoint, data, semaphore) -> (bool, json):
     try:
         result = await requests.post(endpoint, json=data)
     except:
         print('Concern-replication exception')
-        return False
+        return False, data
     if result.status_code == 201:
         if semaphore.locked():
             print(f'semaphore is locked!')
-            _append_to_available_list(data)
-            return True
+            return True, data
         if await semaphore.acquire():
-            return True
+            return True, data
         else:
             print('stopped!')
-            _append_to_available_list(data)
-            return True
+            return True, data
     else:
-        return False
-    return True
+        return False, data
 
 
 async def _async_post_to_endpoint(endpoint, data) -> bool:
@@ -88,21 +85,29 @@ async def _replicate(message, w) -> (bool, str):
             asyncio.gather(*list(tasks))
             return True, 'Message was successfully saved'
         else:
+            w = w - 1
             if w > len(endpoints):
                 w = len(endpoints)
-            semaphore = asyncio.Semaphore(w - 1)
+            semaphore = asyncio.Semaphore(w)
 
             for endpoint in endpoints:
                 task = asyncio.create_task(_post_to_endpoint_with_concern(endpoint, message_to_send, semaphore))
                 tasks.append(task)
 
-            results = await asyncio.gather(*list(tasks))
+            # results = await asyncio.gather(*list(tasks))
 
-            for result in results:
-                if not result:
-                    # message_list.remove(message_to_send)
-                    return False, 'Failed to save a message'
-            return True, 'Message was successfully saved'
+            tasks_list = list(tasks)
+            for cor in asyncio.as_completed(tasks_list):
+                result = await cor
+                if semaphore.locked():
+                    _append_to_available_list(result[1])
+                    return True, 'Message was successfully saved'
+            return False, 'Failed to save a message'
+            # for result in results:
+            #     if not result:
+            #         # message_list.remove(message_to_send)
+            #         return False, 'Failed to save a message'
+            # return True, 'Message was successfully saved'
 
 
 #TODO: think about adding lock for message lists
