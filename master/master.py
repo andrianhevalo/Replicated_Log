@@ -73,7 +73,7 @@ async def _replicate(message, w) -> (bool, str):
 
         for cor in asyncio.as_completed(tasks_list):
             result = await cor
-            if result:
+            if result[0]:
                 w -= 1
                 print(f'result = {result}, w = {w}')
             if w <= 0:
