@@ -1,1 +1,4 @@
 Flask==2.0.2
+uvicorn~=0.15.0
+fastapi~=0.70.0
+requests~=2.26.0

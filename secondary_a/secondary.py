@@ -1,9 +1,16 @@
 from flask import Flask, request
 import time
+import os
 
 app = Flask(__name__)
 
 message_list = []
+delay = os.getenv('DELAY', '10')
+
+
+@app.route('/')
+def empty():
+    return "Hello from secondary!"
 
 
 @app.route('/status')
@@ -19,8 +26,8 @@ def append_message():
     """
     global message_list
     message = request.get_json()
-    time.sleep(5)
-    message_list.append(message["message"])
+    time.sleep(int(delay))
+    message_list.append(message)
     return "New message successfully added to secondary", 201
 
 
@@ -30,7 +37,7 @@ def return_messages():
     :return:
     """
     global message_list
-    return message_list, 200
+    return {"data": message_list}
 
 
 if __name__ == '__main__':
