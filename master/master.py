@@ -16,15 +16,6 @@ class Node:
 paths = [os.getenv('secondary_a_path', 'http://secondary_a:5001'),
          os.getenv('secondary_b_path', 'http://secondary_b:5002')]
 
-
-endpoints = [os.getenv('secondary_a_path', 'http://secondary_a:5001') + '/messages',
-             os.getenv('secondary_b_path', 'http://secondary_b:5002') + '/messages']
-
-
-health_endpoints = [os.getenv('secondary_a_path', 'http://secondary_a:5001') + '/status',
-                    os.getenv('secondary_b_path', 'http://secondary_b:5002') + '/status']
-
-
 nodes = {}  # {'path': Node}
 
 message_list = []
@@ -50,7 +41,6 @@ async def welcome():
 
 @app.get('/messages/list')
 def get():
-    print(_quorum_exists())
     return {"data": json.dumps(available_message_list)}
 
 
@@ -109,8 +99,7 @@ def _append_to_available_list(message) -> (bool, NodeHealth):
 def _unsent_messages_for(message_json) -> [Message]:
     message: Message = Message.create_from(message_json)
     id = message.id
-    print(f'id = {id}')
-    print(f'current available {available_message_list}')
+    print(f'current available {available_message_list} for id {id}')
     filtered = list(filter(lambda cur: cur.id >= id, available_message_list))
     print(f'filtered messages {filtered}')
     return filtered
@@ -120,7 +109,6 @@ async def _post_to_endpoint_retrying(endpoint, data) -> (bool, json):
     data_to_send = [data]
     success = False
     n = -1
-    node = nodes[endpoint]
     while not success:
         try:
             n += 1
