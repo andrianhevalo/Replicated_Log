@@ -22,8 +22,6 @@ class MessageContainer:
         if len(self.messages) == 0:
             return []
 
-        if len(self.messages) == max(ids):
-            return self.messages
         for current_id in ids:
             next_id = current_id + 1
             if next_id not in ids:
