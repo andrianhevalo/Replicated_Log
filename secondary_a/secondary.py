@@ -27,7 +27,8 @@ class MessageContainer:
         for current_id in ids:
             next_id = current_id + 1
             if next_id not in ids:
-                return [[item[0], item[1]] for item in self.messages if item[0] < next_id]
+                res = [[item[0], item[1]] for item in self.messages if item[0] < next_id]
+                return sorted(res)
 
         return sorted(self.messages)
 
