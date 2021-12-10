@@ -37,7 +37,7 @@ def return_messages():
     :return:
     """
     global message_list
-    return {"data": message_list}
+    return {"data": sorted(message_list)}
 
 
 if __name__ == '__main__':
